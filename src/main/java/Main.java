@@ -22,37 +22,30 @@ public class Main {
     public static void main(String[] args) throws IOException, ConfigurationException, GenerationException {
         JmeterUtils.initJmeter();
 
-        HashTree hashTree = new HashTree();
-
+        // Configure test elements
+        TestPlan testPlan = TestPlanUtils.getTestPlan();
+        ThreadGroup threadGroup = TestPlanUtils.getSimpleThreadGroup("Test", 1, 1);
         HTTPSamplerProxy httpSampler = TestPlanUtils.getHttpSampler("www.google.com", 80, "/", HttpMethod.GET);
 
-        ThreadGroup threadGroup = TestPlanUtils.getSimpleThreadGroup("Test", 1, 1, httpSampler);
-
-        // Test plan
-        TestPlan testPlan = new TestPlan("MY TEST PLAN");
-        testPlan.setEnabled(true);
-        testPlan.setProperty(TestElement.TEST_CLASS, TestPlan.class.getName());
-        testPlan.setProperty(TestElement.GUI_CLASS, TestPlanGui.class.getName());
-        testPlan.setUserDefinedVariables((Arguments) new ArgumentsPanel().createTestElement());
-
-        hashTree.add(testPlan);
-        HashTree threadGroupHashTree = hashTree.add(testPlan, threadGroup);
+        // Create tree
+        HashTree rootHashTree = new HashTree();
+        rootHashTree.add(testPlan);
+        HashTree threadGroupHashTree = rootHashTree.add(testPlan, threadGroup);
         threadGroupHashTree.add(httpSampler);
 
-        // Generate the JMX
-        SaveService.saveTree(hashTree, new FileOutputStream("sample.jmx"));
+        // Generate jmx
+        SaveService.saveTree(rootHashTree, new FileOutputStream("sample.jmx"));
 
-        ResultCollector resultCollector = JmeterUtils.getResultCollector(SCENARIO_NAME + ".csv");
+        // Add logger
+        rootHashTree.add(testPlan, JmeterUtils.getResultCollector(SCENARIO_NAME + ".csv"));
 
-        hashTree.add(testPlan, resultCollector);
-
-        // Run the Test Plan
-        StandardJMeterEngine jmeterEngine = JmeterUtils.getJmeterEngine(hashTree);
+        // Run test
+        StandardJMeterEngine jmeterEngine = JmeterUtils.getJmeterEngine(rootHashTree);
         System.out.println("Running test suite, please wait...\n");
         jmeterEngine.run();
         System.out.println("\n... Test suite has finished.");
 
-        // HTML Report
+        // Report
         ReportGenerator generator = new ReportGenerator(SCENARIO_NAME + ".csv", null);
         generator.generate();
         System.out.println("Ready");
