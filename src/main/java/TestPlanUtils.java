@@ -16,6 +16,7 @@ public class TestPlanUtils {
         loopController.initialize();
 
         ThreadGroup threadGroup = new ThreadGroup();
+        threadGroup.setName(name);
         threadGroup.setNumThreads(threads);
         threadGroup.setRampUp(rampUpSeconds);
         threadGroup.setSamplerController(loopController);
@@ -27,6 +28,7 @@ public class TestPlanUtils {
 
     public static HTTPSamplerProxy getHttpSampler(String domain, Integer port, String path, HttpMethod method) {
         HTTPSamplerProxy httpSampler = new HTTPSamplerProxy();
+        httpSampler.setName("Google");
         httpSampler.setDomain(domain);
         httpSampler.setPort(port);
         httpSampler.setPath(path);

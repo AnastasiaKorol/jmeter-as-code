@@ -1,3 +1,5 @@
+import org.apache.jmeter.config.Arguments;
+import org.apache.jmeter.config.gui.ArgumentsPanel;
 import org.apache.jmeter.control.gui.TestPlanGui;
 import org.apache.jmeter.engine.StandardJMeterEngine;
 import org.apache.jmeter.protocol.http.sampler.HTTPSamplerProxy;
@@ -31,6 +33,7 @@ public class Main {
         testPlan.setEnabled(true);
         testPlan.setProperty(TestElement.TEST_CLASS, TestPlan.class.getName());
         testPlan.setProperty(TestElement.GUI_CLASS, TestPlanGui.class.getName());
+        testPlan.setUserDefinedVariables((Arguments) new ArgumentsPanel().createTestElement());
 
         hashTree.add(testPlan);
         HashTree threadGroupHashTree = hashTree.add(testPlan, threadGroup);
