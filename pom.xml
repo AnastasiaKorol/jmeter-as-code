@@ -18,8 +18,13 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
 
         <jmeter.version>5.4.1</jmeter.version>
-        <surfire.version>3.0.0-M5</surfire.version>
+        <jmeter.maven.plugin.version>3.3.0</jmeter.maven.plugin.version>
+        <jmeter.maven.plugin.config>${project.build.directory}/config.json</jmeter.maven.plugin.config>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
+
+        <scenario>sample</scenario>
+        <test.results>${project.build.directory}/jmeter/results</test.results>
+        <maven.build.timestamp.format>yyyy-MM-dd_HH-mm-ss</maven.build.timestamp.format>
     </properties>
 
     <dependencies>
@@ -34,6 +39,24 @@
             <groupId>org.apache.jmeter</groupId>
             <artifactId>ApacheJMeter_http</artifactId>
             <version>${jmeter.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <!--https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
+        <!-- right fileutils package https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.8.0</version>
         </dependency>
 
     </dependencies>
@@ -58,28 +81,78 @@
                 </configuration>
             </plugin>
 
-            <!--plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+            <!-- https://mvnrepository.com/artifact/com.lazerycode.jmeter/jmeter-maven-plugin -->
+            <plugin>
+                <groupId>com.lazerycode.jmeter</groupId>
+                <artifactId>jmeter-maven-plugin</artifactId>
+                <version>${jmeter.maven.plugin.version}</version>
                 <executions>
+                    <!-- Generate JMeter configuration -->
                     <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
+                        <id>configuration</id>
                         <goals>
-                            <goal>single</goal>
+                            <goal>configure</goal>
+                        </goals>
+                    </execution>
+                    <!-- Run JMeter tests -->
+                    <execution>
+                        <id>jmeter-tests</id>
+                        <goals>
+                            <goal>jmeter</goal>
                         </goals>
                     </execution>
                 </executions>
-            </plugin-->
+
+                <configuration>
+                    <jmeterVersion>${jmeter.version}</jmeterVersion>
+
+                    <testFilesIncluded>
+                        <jMeterTestFile>${scenario}.jmx</jMeterTestFile>
+                    </testFilesIncluded>
+                    <testFilesDirectory>${project.build.directory}/compiled-tests</testFilesDirectory>
+                    <testFilesBuildDirectory>${project.build.directory}/jmeter/testFiles</testFilesBuildDirectory>
+
+                    <jmeterExtensions>
+                        <!-- Custom Thread Groups
+                        https://jmeter-plugins.org/?search=jpgc-casutg
+                        http://repo.maven.apache.org/maven2/kg/apc/jmeter-plugins-casutg/
+                        -->
+                        <artifact>kg.apc:jmeter-plugins-casutg:2.6</artifact>
+
+                        <!-- Parameterized controller https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-prmctl -->
+                        <artifactId>kg.apc:jmeter-plugins-prmctl:0.4</artifactId>
+                    </jmeterExtensions>
+
+                    <downloadExtensionDependencies>true</downloadExtensionDependencies>
+                    <downloadLibraryDependencies>false</downloadLibraryDependencies>
+                    <downloadOptionalDependencies>false</downloadOptionalDependencies>
+                    <downloadJMeterDependencies>true</downloadJMeterDependencies>
+
+                    <testResultsTimestamp>false</testResultsTimestamp>
+                    <appendResultsTimestamp>true</appendResultsTimestamp>
+                    <overrideRootLogLevel>WARN</overrideRootLogLevel>
+                    <suppressJMeterOutput>false</suppressJMeterOutput>
+                    <ignoreResultFailures>true</ignoreResultFailures>
+
+                    <testConfigFile>${jmeter.maven.plugin.config}</testConfigFile>
+
+                    <propertiesJMeter>
+                        <!-- # Disable sent statistics to https://jmeter-plugins.org/stats/ -->
+                        <!-- https://jmeter-plugins.org/wiki/PluginsManager/ -->
+                        <jpgc.repo.sendstats>false</jpgc.repo.sendstats>
+                        <!-- Optimize sockets -->
+                        <!-- https://downloads.ctfassets.net/ut4a3ciohj8i/44lDuEDZ4zf5tEtxX8aK76/5b8efb3cba2240f94ac8c3f1d38e71f7/Vyacheslav_Smirnov_Uskoryayem_Apache_JMeter.pdf -->
+                        <jmeter.httpsampler>Java</jmeter.httpsampler>
+                    </propertiesJMeter>
+
+                    <resultsFileFormat>csv</resultsFileFormat>
+                    <resultsDirectory>${test.results}/${maven.build.timestamp}_${scenario}</resultsDirectory>
+
+                    <generateReports>true</generateReports>
+                    <reportDirectory>${test.results}/${maven.build.timestamp}_${scenario}/report</reportDirectory>
+
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -94,6 +167,10 @@
                         </goals>
                         <configuration>
                             <mainClass>Main</mainClass>
+                            <arguments>
+                                <argument>--config</argument>
+                                <argument>${jmeter.maven.plugin.config}</argument>
+                            </arguments>
                         </configuration>
                     </execution>
                 </executions>

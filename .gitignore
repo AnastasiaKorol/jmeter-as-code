@@ -26,8 +26,3 @@ hs_err_pid*
 .idea
 *.iml
 target/
-
-# temp
-src/main/resources/apache-jmeter-5.4.1
-*.jmx
-*.csv
