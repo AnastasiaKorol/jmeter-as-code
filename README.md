@@ -7,4 +7,5 @@ this will
 - compile code and create jmx files in target/compiled-tests
 - run sample.jmx
 - build jmeter html report
+
 Use maven profiles to run other jmx file
