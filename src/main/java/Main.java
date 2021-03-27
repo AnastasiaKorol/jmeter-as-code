@@ -1,39 +1,20 @@
 import org.apache.commons.cli.ParseException;
-import org.apache.jmeter.protocol.http.sampler.HTTPSamplerProxy;
-import org.apache.jmeter.save.SaveService;
-import org.apache.jmeter.testelement.TestPlan;
-import org.apache.jmeter.threads.ThreadGroup;
-import org.apache.jorphan.collections.HashTree;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class Main {
-    private static final String SCENARIO_NAME = "sample";
+    private final static String JMX_FOLDER = "target/compiled-tests";
 
     public static void main(String[] args) throws IOException, ParseException {
-        // Depends a lot on jmeter-maven-plugin realization
-        System.out.println("Trying to guess jmeter path");
-        String jmeterPath = ArgsParser.getJmeterPathFromArgs(args);
-        System.out.println(jmeterPath);
-        JmeterUtils.initJmeter(jmeterPath);
+        String jmeterPath = new ArgsParser(args).getJmeterPath();
 
-        // Configure test elements
-        TestPlan testPlan = TestPlanUtils.getTestPlan();
-        ThreadGroup threadGroup = TestPlanUtils.getSimpleThreadGroup("Test", 1, 1);
-        HTTPSamplerProxy httpSampler = TestPlanUtils.getHttpSampler("www.google.com", 80, "/", HttpMethod.GET);
+        System.out.println("Jmeter path " + jmeterPath);
+        System.out.println("Created jmx will be saved to " + JMX_FOLDER);
 
-        // Create tree
-        HashTree rootHashTree = new HashTree();
-        rootHashTree.add(testPlan);
-        HashTree threadGroupHashTree = rootHashTree.add(testPlan, threadGroup);
-        threadGroupHashTree.add(httpSampler);
-
-        // Generate jmx
-        Files.createDirectories(Paths.get("target/compiled-tests"));
-        SaveService.saveTree(rootHashTree, new FileOutputStream("target/compiled-tests/" + SCENARIO_NAME + ".jmx"));
+        ScenarioManager sm = new ScenarioManager(jmeterPath);
+        sm.getGoogle(2, 2).save(JMX_FOLDER + File.separator + "sample.jmx");
+        sm.getGoogleWithFixedPace(1, 2, 1, 0.5)
+                .save(JMX_FOLDER + File.separator + "sample_fixedpace.jmx"); // get google with 1 rps
     }
-
 }

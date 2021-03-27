@@ -13,18 +13,19 @@
     <!-- Properties -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy-MM-dd_HH-mm-ss</maven.build.timestamp.format>
 
-        <maven.compiler.java>1.8</maven.compiler.java>
-        <maven.compiler.version>3.8.1</maven.compiler.version>
+        <maven.compiler.plugin.java>1.8</maven.compiler.plugin.java>
+        <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+
+        <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
 
         <jmeter.version>5.4.1</jmeter.version>
         <jmeter.maven.plugin.version>3.3.0</jmeter.maven.plugin.version>
         <jmeter.maven.plugin.config>${project.build.directory}/config.json</jmeter.maven.plugin.config>
-        <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-        <scenario>sample</scenario>
+        <test.scenario>sample</test.scenario>
         <test.results>${project.build.directory}/jmeter/results</test.results>
-        <maven.build.timestamp.format>yyyy-MM-dd_HH-mm-ss</maven.build.timestamp.format>
     </properties>
 
     <dependencies>
@@ -58,11 +59,28 @@
             <artifactId>commons-io</artifactId>
             <version>2.8.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/kg.apc/jmeter-plugins-casutg -->
+        <dependency>
+            <groupId>kg.apc</groupId>
+            <artifactId>jmeter-plugins-casutg</artifactId>
+            <version>2.9</version>
+        </dependency>
 
     </dependencies>
 
     <profiles>
-
+        <profile>
+            <id>sample</id>
+            <properties>
+                <test.scenario>sample</test.scenario>
+            </properties>
+        </profile>
+        <profile>
+            <id>sample fixed pace</id>
+            <properties>
+                <test.scenario>sample_fixedpace</test.scenario>
+            </properties>
+        </profile>
     </profiles>
 
     <!-- Build Settings -->
@@ -74,10 +92,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>${maven.compiler.java}</source>
-                    <target>${maven.compiler.java}</target>
+                    <source>${maven.compiler.plugin.java}</source>
+                    <target>${maven.compiler.plugin.java}</target>
                 </configuration>
             </plugin>
 
@@ -107,7 +125,7 @@
                     <jmeterVersion>${jmeter.version}</jmeterVersion>
 
                     <testFilesIncluded>
-                        <jMeterTestFile>${scenario}.jmx</jMeterTestFile>
+                        <jMeterTestFile>${test.scenario}.jmx</jMeterTestFile>
                     </testFilesIncluded>
                     <testFilesDirectory>${project.build.directory}/compiled-tests</testFilesDirectory>
                     <testFilesBuildDirectory>${project.build.directory}/jmeter/testFiles</testFilesBuildDirectory>
@@ -115,7 +133,7 @@
                     <jmeterExtensions>
                         <!-- Custom Thread Groups
                         https://jmeter-plugins.org/?search=jpgc-casutg
-                        http://repo.maven.apache.org/maven2/kg/apc/jmeter-plugins-casutg/
+                        https://repo.maven.apache.org/maven2/kg/apc/jmeter-plugins-casutg/
                         -->
                         <artifact>kg.apc:jmeter-plugins-casutg:2.6</artifact>
 
@@ -146,10 +164,10 @@
                     </propertiesJMeter>
 
                     <resultsFileFormat>csv</resultsFileFormat>
-                    <resultsDirectory>${test.results}/${maven.build.timestamp}_${scenario}</resultsDirectory>
+                    <resultsDirectory>${test.results}/${maven.build.timestamp}_${test.scenario}</resultsDirectory>
 
                     <generateReports>true</generateReports>
-                    <reportDirectory>${test.results}/${maven.build.timestamp}_${scenario}/report</reportDirectory>
+                    <reportDirectory>${test.results}/${maven.build.timestamp}_${test.scenario}/report</reportDirectory>
 
                 </configuration>
             </plugin>
@@ -157,7 +175,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>${exec-maven-plugin.version}</version>
+                <version>${exec.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>run-scenario</id>
