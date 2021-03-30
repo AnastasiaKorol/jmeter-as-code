@@ -13,7 +13,7 @@ import org.apache.jmeter.testelement.property.StringProperty;
 import org.apache.jmeter.threads.ThreadGroup;
 import org.apache.jmeter.timers.ConstantThroughputTimer;
 import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.collections.HashTree;
+import org.apache.jorphan.collections.ListedHashTree;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestPlan {
-    private HashTree rootHashTree;
+    private ListedHashTree rootHashTree;
     private org.apache.jmeter.testelement.TestPlan testPlan;
 
     public TestPlan() {
@@ -34,7 +34,7 @@ public class TestPlan {
         testPlan.setProperty(TestElement.TEST_CLASS, org.apache.jmeter.testelement.TestPlan.class.getName());
         testPlan.setProperty(TestElement.GUI_CLASS, TestPlanGui.class.getName());
 
-        rootHashTree = new HashTree();
+        rootHashTree = new ListedHashTree();
         rootHashTree.add(testPlan);
     }
 
@@ -45,10 +45,6 @@ public class TestPlan {
 
         JMeterUtils.loadJMeterProperties(jmeterBin + File.separator + "jmeter.properties");
         JMeterUtils.loadProperties(jmeterBin + File.separator + "user.properties");
-        // use custom saveservice to save pretty jmx file, which can be opened in GUI
-        JMeterUtils.setProperty(
-                "saveservice_properties",
-                TestPlan.class.getClassLoader().getResource("saveservice.properties").getPath());
         JMeterUtils.initLocale();
     }
 
@@ -56,7 +52,7 @@ public class TestPlan {
         ThreadGroup threadGroup = TestPlanElements.getSimpleThreadGroup("Test", threads, iterationsPerThread, 1);
         HTTPSamplerProxy httpSampler = TestPlanElements.getHttpSampler("Google", "www.google.com", 80, "/", HttpMethod.GET);
 
-        HashTree threadGroupHashTree = rootHashTree.add(testPlan, threadGroup);
+        ListedHashTree threadGroupHashTree = (ListedHashTree)rootHashTree.add(testPlan, threadGroup);
         threadGroupHashTree.add(httpSampler);
 
         return this;
@@ -73,10 +69,9 @@ public class TestPlan {
         steps.add(getLoadStep(durationMinutes, threads, rampUpSecs));
         threadGroup.setData(new CollectionProperty("ultimatethreadgroupdata", steps));
 
-        HashTree threadGroupHashTree = rootHashTree.add(testPlan, threadGroup);
-        // TODO How to determine nodes order?
-        threadGroupHashTree.add(httpSampler);
+        ListedHashTree threadGroupHashTree = (ListedHashTree)rootHashTree.add(testPlan, threadGroup);
         threadGroupHashTree.add(flowControl).add(timer);
+        threadGroupHashTree.add(httpSampler);
 
         return this;
     }

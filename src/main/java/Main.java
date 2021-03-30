@@ -14,7 +14,7 @@ public class Main {
 
         ScenarioManager sm = new ScenarioManager(jmeterPath);
         sm.getGoogle(2, 2).save(JMX_FOLDER + File.separator + "sample.jmx");
-        sm.getGoogleWithFixedPace(1, 2, 1, 0.5)
+        sm.getGoogleWithFixedPace(10, 2, 1, 0.5)
                 .save(JMX_FOLDER + File.separator + "sample_fixedpace.jmx"); // get google with 1 rps
     }
 }
