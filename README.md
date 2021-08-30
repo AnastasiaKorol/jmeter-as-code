@@ -1,6 +1,8 @@
 # jmeter-as-code
 This project is a demo of coded performance tests with jmeter API
 
+> mvn verify
+
 this will
 - download jmeter 5.4.1 with all dependencies
 - compile code and create jmx files in target/compiled-tests
